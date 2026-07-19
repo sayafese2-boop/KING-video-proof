@@ -1,0 +1,48 @@
+from fastapi import FastAPI, UploadFile, File
+from video_checker import analyze_video
+import shutil
+import os
+
+
+app = FastAPI(
+    title="KING Video Proof AI"
+)
+
+
+UPLOAD_FOLDER = "uploads"
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "KING AI Video Verification System Online"
+    }
+
+
+
+@app.post("/verify-workout")
+async def verify_workout(
+    video: UploadFile = File(...)
+):
+
+    filepath = f"{UPLOAD_FOLDER}/{video.filename}"
+
+
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(
+            video.file,
+            buffer
+        )
+
+
+    result = analyze_video(filepath)
+
+
+    return {
+        "verified": result["verified"],
+        "score": result["score"],
+        "feedback": result["feedback"]
+    }
